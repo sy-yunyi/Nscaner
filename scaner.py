@@ -75,7 +75,7 @@ if __name__ == '__main__':
 
     # 使用zmap扫描
     print("zmap scanning ...")
-    fp = open("./data/gfw.txt","r")
+    fp = open("./data/gfw.list","r")
     lines = fp.readlines()
     lines = [line.strip() for line in lines]
     # lines = ["baidu.com"]
