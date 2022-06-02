@@ -9,27 +9,6 @@ from tqdm import tqdm
 import argparse
 from hashlib import md5
 
-def scanning_domain(ns):
-    cmd = f"cat /home/usertoor/silex/domain_mirroring/data/domains_100.txt | /home/usertoor/silex/zdns/zdns/zdns A -name-servers {ns}"
-    # cmd = f"cat /home/usertoor/silex/ghostR/data/zonefile_ns_records_domain_0531_uniq.txt | /home/usertoor/silex/zdns/zdns/zdns A -name-servers {ns}"
-    # cmd = f"cat 'baidu.com' | /home/usertoor/silex/zdns/zdns/zdns A -name-servers {ns}"
-    p = subprocess.Popen(cmd,shell=True,stdin=subprocess.PIPE,stdout=subprocess.PIPE)
-    results = []
-    for line in p.stdout.readlines():
-        lj = json.loads(line)
-        dstatus = lj['status']
-        dname = lj['name']
-        if "answers" in lj['data'].keys():
-            for ai in lj['data']['answers']:
-                aip = ai['answer']
-                atype = ai['type']
-                aname = ai['name']
-                results.append([dname,dstatus,aip,aname,atype,ns])
-        else:
-            results.append([dname,dstatus,"","","",ns])
-
-    return results
-
 
 def scanning_domain_zmap(domain,shost,myinterface=None):
     # echo 'toortoor' | sudo -S 
@@ -64,10 +43,6 @@ def zmap_results_out(detectver):
     os.system(f"tar -zcvf ./data/zmap_res_all-{detectver}.tar.gz {file_outroot_path}")
     os.system(f"tar -zcvf ./data/zmap_data_res_all-{detectver}.tar.gz {file_tarroot_path}")
     
-
-
-
-
 
 def out_to_file(in_file,out_file,detectver):
     for line in in_file:
@@ -234,6 +209,7 @@ if __name__ == '__main__':
 
     p.close()
     p.join()
+    print("zmap file")
     zmap_results_out(myargs.dv)
 
 
