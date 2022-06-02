@@ -34,7 +34,7 @@ def scanning_domain_zmap(domain):
     # cmd = f"cat /home/usertoor/silex/domain_mirroring/data/domains_100.txt | /home/usertoor/silex/zdns/zdns/zdns A -name-servers {ns}"
     # cmd = f"cat /home/usertoor/silex/ghostR/data/zonefile_ns_records_domain_0531_uniq.txt | /home/usertoor/silex/zdns/zdns/zdns A -name-servers {ns}"
     # cmd = f"cat 'baidu.com' | /home/usertoor/silex/zdns/zdns/zdns A -name-servers {ns}"
-    cmd = f"zmap -p 53 -B 3M --probe-module=dns --probe-args='A,{domain}' -O json --output-fields=* --output-file=./data/zmap/{domain}-.res --list-of-ips-file=./data/ips.txt"
+    cmd = f"zmap -p 53 -B 3M --probe-module=dns --probe-args='A,{domain}' -O json --output-fields=* --output-file=./data/zmap/{domain}-.res --list-of-ips-file=./data/name_server_ips.txt"
     p = subprocess.Popen(cmd,shell=True,stdin=subprocess.PIPE,stdout=subprocess.PIPE)
     # --interface=enp96s0f1
     print(p.stdout.readlines())
