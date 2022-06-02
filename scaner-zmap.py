@@ -31,9 +31,11 @@ def scanning_domain(ns):
     return results
 
 
-def scanning_domain_zmap(domain,shost):
-
-    cmd = f"zmap -p 53 -B 3M --probe-module=dns --probe-args='A,{domain}' -O json --output-fields=* --output-file=./data/zmap/{domain}-.res --list-of-ips-file={shost}"
+def scanning_domain_zmap(domain,shost,myinterface=None):
+    if myinterface:
+        cmd = f"zmap -p 53 -B 3M --probe-module=dns --probe-args='A,{domain}' -O json --output-fields=* --interface={myinterface} --output-file=./data/zmap/{domain}-.res --list-of-ips-file={shost}"
+    else:
+        cmd = f"zmap -p 53 -B 3M --probe-module=dns --probe-args='A,{domain}' -O json --output-fields=* --output-file=./data/zmap/{domain}-.res --list-of-ips-file={shost}"
     p = subprocess.Popen(cmd,shell=True,stdin=subprocess.PIPE,stdout=subprocess.PIPE)
     print(p.stdout.readlines())
     return domain
@@ -208,7 +210,7 @@ if __name__ == '__main__':
     parser.add_argument("-psize",help="pool size",default=3)
     parser.add_argument("-td",help="target domain",default="./data/gfw.list")
     parser.add_argument("-ips",help="host ips",default="./data/name_server_ips.txt")
-    
+    parser.add_argument("-iface",help="interface",default="0")
     # parser.add_argument("-s")
     # parser.add_argument("-tf")
 
@@ -224,7 +226,10 @@ if __name__ == '__main__':
     lines = [line.strip() for line in lines]
 
     for ni in tqdm(lines):
-        p.apply_async(scanning_domain_zmap,args=(ni,myargs.ips)) # 异步运行，根据进程池中有的进程数，每次最多3个子进程在异步执行
+        if myargs.iface != "0":
+            p.apply_async(scanning_domain_zmap,args=(ni,myargs.ips,myargs.iface)) # 异步运行，根据进程池中有的进程数，每次最多3个子进程在异步执行
+        else:
+            p.apply_async(scanning_domain_zmap,args=(ni,myargs.ips))
 
     p.close()
     p.join()
