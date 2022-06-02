@@ -11,6 +11,9 @@ from hashlib import md5
 
 
 def scanning_domain_zmap(domain,shost,myinterface=None):
+    if not os.path.exists("./data/zmap"):
+        os.makedirs("./data/zmap")
+
     # echo 'toortoor' | sudo -S 
     if myinterface:
         cmd = f"zmap -p 53 -B 3M --probe-module=dns --probe-args='A,{domain}' -O json --output-fields=* --interface={myinterface} --output-file=./data/zmap/{domain}-.res --list-of-ips-file={shost}"
