@@ -44,7 +44,13 @@ def zmap_results_out(detectver):
     file_tarroot_path = "./data/zmap_tar"
     file_list = os.listdir(file_root_path)
 
-    
+    if not os.path.exists(file_outroot_path):
+        os.makedirs(file_outroot_path)
+    if not os.path.exists(file_tarroot_path):
+        os.makedirs(file_tarroot_path)
+    if not os.path.exists(file_root_path):
+        os.makedirs(file_tarroot_path)
+
     for fi in file_list:
         in_file = open(os.path.join(file_root_path,fi),"r")
         out_file = open(os.path.join(file_outroot_path,fi),"w")
