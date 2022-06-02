@@ -207,7 +207,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
     parser.add_argument("-dv",help="detection version",default=1)
-    parser.add_argument("-psize",help="pool size",default=3)
+    parser.add_argument("-psize",help="pool size",default=3,type=int)
     parser.add_argument("-td",help="target domain",default="./data/gfw.list")
     parser.add_argument("-ips",help="host ips",default="./data/name_server_ips.txt")
     parser.add_argument("-iface",help="interface",default="0")
