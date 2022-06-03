@@ -10,38 +10,42 @@ import argparse
 from hashlib import md5
 
 
-def scanning_domain_zmap(domain,shost,myinterface=None):
+def scanning_domain_zmap(domain,shost,detectver,myinterface=None):
     if not os.path.exists("./data/zmap"):
         os.makedirs("./data/zmap")
 
     # echo 'toortoor' | sudo -S 
     if myinterface:
-        cmd = f"zmap -p 53 -B 3M --probe-module=dns --probe-args='A,{domain}' -O json --output-fields=* --interface={myinterface} --output-file=./data/zmap/{domain}-.res --list-of-ips-file={shost}"
+        cmd = f"echo 'toortoor' | sudo -S zmap -p 53 -B 3M --probe-module=dns --probe-args='A,{domain}' -O json --output-fields=* --interface={myinterface} --output-file=./data/zmap/{domain}-.res --list-of-ips-file={shost}"
     else:
         cmd = f"zmap -p 53 -B 3M --probe-module=dns --probe-args='A,{domain}' -O json --output-fields=* --output-file=./data/zmap/{domain}-.res --list-of-ips-file={shost}"
     p = subprocess.Popen(cmd,shell=True,stdin=subprocess.PIPE,stdout=subprocess.PIPE)
-    print(p.stdout.readlines())
-    return domain
+    p.communicate()
+    # print(p.stdout.readlines())
+    print("wait ... ")
+    p.wait()
+    print(domain)
+    return {"domain":domain,"dv":detectver}
 
 def zmap_results_out(detectver):
     file_root_path = "./data/zmap"
     file_outroot_path = "./data/zmap_res"
     file_tarroot_path = "./data/zmap_tar"
-    file_list = os.listdir(file_root_path)
+    # file_list = os.listdir(file_root_path)
 
-    if not os.path.exists(file_outroot_path):
-        os.makedirs(file_outroot_path)
-    if not os.path.exists(file_tarroot_path):
-        os.makedirs(file_tarroot_path)
-    if not os.path.exists(file_root_path):
-        os.makedirs(file_root_path)
+    # if not os.path.exists(file_outroot_path):
+    #     os.makedirs(file_outroot_path)
+    # if not os.path.exists(file_tarroot_path):
+    #     os.makedirs(file_tarroot_path)
+    # if not os.path.exists(file_root_path):
+    #     os.makedirs(file_root_path)
 
-    for fi in file_list:
-        in_file = open(os.path.join(file_root_path,fi),"r")
-        out_file = open(os.path.join(file_outroot_path,fi),"w")
-        out_to_file(in_file,out_file,detectver)
-        os.system(f"tar -zcvf {os.path.join(file_tarroot_path,fi)}.tar.gz {os.path.join(file_root_path,fi)}")
-        os.system(f"rm -f {os.path.join(file_root_path,fi)}")
+    # for fi in file_list:
+    #     in_file = open(os.path.join(file_root_path,fi),"r")
+    #     out_file = open(os.path.join(file_outroot_path,fi),"w")
+    #     out_to_file(in_file,out_file,detectver)
+    #     os.system(f"tar -zcvf {os.path.join(file_tarroot_path,fi)}.tar.gz {os.path.join(file_root_path,fi)}")
+    #     os.system(f"rm -f {os.path.join(file_root_path,fi)}")
     
     os.system(f"tar -zcvf ./data/zmap_res_all-{detectver}.tar.gz {file_outroot_path}")
     os.system(f"tar -zcvf ./data/zmap_data_res_all-{detectver}.tar.gz {file_tarroot_path}")
@@ -181,6 +185,29 @@ def out_to_file(in_file,out_file,detectver):
         out_file.write(f"{timestamp},{detectversion},{saddr},{saddr_int},{ipid},{ttl},{dport},{udp_len},{dns_id},{dns_rd},{dns_tc},{dns_aa},{dns_opcode},{dns_qr},{dns_rcode},{dns_cd},{dns_ad},{dns_z},{dns_ra},{dns_qdcount},{dns_ancount},{dns_nscount},{dns_arcount},{answer0_name},{answer0_type},{answer0_type_str},{answer0_class},{answer0_ttl},{answer0_rdlength},{answer0_rdata},{answer0_rdata_ip},{answer0_rdata_timestamp},{answer0_rdata_port},{answers_data},{question0_name},{question0_type},{question0_type_str},{question0_class},{questions_data},{authority0_name},{authority0_type},{authority0_type_str},{authority0_class},{authority0_ttl},{authority0_rdlength},{authority0_rdata},{authorities_data},{additional0_name},{additional0_type},{additional0_type_str},{additional0_class},{additional0_rdlength},{additional0_ttl},{additional0_rdata},{additionals_data},{dns_unconsumed_bytes},{dns_parse_err},{smd5}"+"\n")
 
 
+def out_file_callback(msg):
+    print(msg)
+    file_root_path = "./data/zmap"
+    file_outroot_path = "./data/zmap_res"
+    file_tarroot_path = "./data/zmap_tar"
+    file_list = os.listdir(file_root_path)
+
+    fi = msg['domain']+"-.res"
+
+    if not os.path.exists(file_outroot_path):
+        os.makedirs(file_outroot_path)
+    if not os.path.exists(file_tarroot_path):
+        os.makedirs(file_tarroot_path)
+    if not os.path.exists(file_root_path):
+        os.makedirs(file_root_path)
+
+    in_file = open(os.path.join(file_root_path,fi),"r")
+    out_file = open(os.path.join(file_outroot_path,fi),"w")
+    out_to_file(in_file,out_file,msg['dv'])
+    os.system(f"tar -zcvf {os.path.join(file_tarroot_path,fi)}.tar.gz {os.path.join(file_root_path,fi)}")
+    os.system(f"rm -f {os.path.join(file_root_path,fi)}")
+
+
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
@@ -206,9 +233,9 @@ if __name__ == '__main__':
 
     for ni in tqdm(lines):
         if myargs.iface != "0":
-            p.apply_async(scanning_domain_zmap,args=(ni,myargs.ips,myargs.iface)) # 异步运行，根据进程池中有的进程数，每次最多3个子进程在异步执行
+            p.apply_async(scanning_domain_zmap,args=(ni,myargs.ips,myargs.dv,myargs.iface),callback=test_call) # 异步运行，根据进程池中有的进程数，每次最多3个子进程在异步执行
         else:
-            p.apply_async(scanning_domain_zmap,args=(ni,myargs.ips))
+            p.apply_async(scanning_domain_zmap,args=(ni,myargs.ips,myargs.dv))
 
     p.close()
     p.join()
