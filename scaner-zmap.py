@@ -236,7 +236,7 @@ if __name__ == '__main__':
         if myargs.iface != "0":
             p.apply_async(scanning_domain_zmap,args=(ni,myargs.ips,myargs.dv,myargs.iface),callback=out_file_callback) # 异步运行，根据进程池中有的进程数，每次最多3个子进程在异步执行
         else:
-            p.apply_async(scanning_domain_zmap,args=(ni,myargs.ips,myargs.dv))
+            p.apply_async(scanning_domain_zmap,args=(ni,myargs.ips,myargs.dv),callback=out_file_callback)
 
     p.close()
     p.join()
